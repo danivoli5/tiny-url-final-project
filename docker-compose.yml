@@ -1,0 +1,46 @@
+version: "3.8"
+services:
+  tinyurl-app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - tinyurl-net
+    environment:
+      MONGO_USERNAME: mongouser
+      MONGO_PASSWORD: mongopass
+
+  mongo:
+    image: mongo:4.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - tinyurl-net
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: mongopass
+
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - tinyurl-net
+    environment:
+      REDIS_PASSWORD: redis
+    volumes:
+      - redis-data:/data
+
+networks:
+  tinyurl-net:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  redis-data:
