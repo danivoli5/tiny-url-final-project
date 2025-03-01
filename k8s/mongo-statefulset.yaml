@@ -39,6 +39,7 @@ spec:
         resources:
           requests:
             storage: 150Mi
+# Service
 ---
 apiVersion: v1
 kind: Service

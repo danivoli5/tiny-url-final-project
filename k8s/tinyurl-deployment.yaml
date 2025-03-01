@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinyurl-app
+  labels:
+    app: tinyurl-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tinyurl-app
+  template:
+    metadata:
+      labels:
+        app: tinyurl-app
+    spec:
+      containers:
+        - name: tinyurl-app
+          image: gcr.io/useful-art-450916-u3/tinyurl:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-credentials
+                  key: username
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-credentials
+                  key: password
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: password
+#          readinessProbe:
+#            httpGet:
+#              path: /actuator/health
+#              port: 8080
+#            initialDelaySeconds: 10
+#            periodSeconds: 10
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tinyurl-service
+  labels:
+    app: tinyurl-app
+spec:
+  type: LoadBalancer  # For external access, or NodePort if you prefer
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: tinyurl-app
+
