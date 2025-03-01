@@ -35,13 +35,8 @@ spec:
                 secretKeyRef:
                   name: redis-credentials
                   key: password
-#          readinessProbe:
-#            httpGet:
-#              path: /actuator/health
-#              port: 8080
-#            initialDelaySeconds: 10
-#            periodSeconds: 10
-# Service
+            - name: REDIS_HOST
+              value: "redis-0.redis"
 ---
 apiVersion: v1
 kind: Service
@@ -50,11 +45,10 @@ metadata:
   labels:
     app: tinyurl-app
 spec:
-  type: LoadBalancer  # For external access, or NodePort if you prefer
+  type: LoadBalancer
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
   selector:
     app: tinyurl-app
-

@@ -4,7 +4,7 @@ metadata:
   name: mongo
 spec:
   serviceName: "mongo"
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: mongo
@@ -13,6 +13,17 @@ spec:
       labels:
         app: mongo
     spec:
+      securityContext:
+        fsGroup: 999
+      initContainers:
+        - name: copy-keyfile
+          image: busybox
+          command: ["sh", "-c", "cp /mnt/secret/keyfile /etc/mongo-keyfile/keyfile && chmod 400 /etc/mongo-keyfile/keyfile && chown 999:999 /etc/mongo-keyfile/keyfile"]
+          volumeMounts:
+            - name: keyfile-secret
+              mountPath: /mnt/secret
+            - name: keyfile
+              mountPath: /etc/mongo-keyfile
       containers:
         - name: mongo
           image: mongo:4.0
@@ -20,17 +31,37 @@ spec:
             - containerPort: 27017
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
-              value: "mongouser"
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-credentials
+                  key: username
             - name: MONGO_INITDB_ROOT_PASSWORD
-              value: "mongopass"
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-credentials
+                  key: password
           volumeMounts:
             - name: mongo-data
               mountPath: /data/db
-          command:
-            - "mongod"
+            - name: keyfile
+              mountPath: /etc/mongo-keyfile
+              readOnly: true
+          args:
             - "--bind_ip_all"
             - "--replSet"
             - "rs0"
+            - "--auth"
+            - "--keyFile"
+            - "/etc/mongo-keyfile/keyfile"
+      volumes:
+        - name: keyfile-secret
+          secret:
+            secretName: mongo-credentials
+            items:
+              - key: keyfile
+                path: keyfile
+        - name: keyfile
+          emptyDir: {}
   volumeClaimTemplates:
     - metadata:
         name: mongo-data
@@ -39,7 +70,6 @@ spec:
         resources:
           requests:
             storage: 150Mi
-# Service
 ---
 apiVersion: v1
 kind: Service
