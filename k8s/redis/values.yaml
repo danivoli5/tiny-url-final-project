@@ -1,0 +1,99 @@
+architecture: replication
+
+auth:
+  enabled: true
+  sentinel: true
+  existingSecret: "redis-credentials"
+  existingSecretPasswordKey: "redis-password"
+
+master:
+  nameOverride: "my-redis-master"
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  serviceName: "my-redis-master"  # Explicit service name
+
+replica:
+  nameOverride: "my-redis-replicas"
+  replicaCount: 2
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+sentinel:
+  nameOverride: "my-redis-sentinel"
+  enabled: true
+  masterSet: "mymaster"
+  quorum: 2
+  getMasterTimeout: 90
+  failoverTimeout: 180000
+  downAfterMilliseconds: 60000
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "200m"
+      memory: "512Mi"
+  service:
+    type: ClusterIP
+    headless:
+      enabled: true
+
+service:
+  master:
+    annotations: {}
+    type: ClusterIP
+    name: "my-redis-master"
+  replica:
+    annotations: {}
+    type: ClusterIP
+    name: "my-redis-replicas"
+  sentinel:
+    annotations: {}
+    type: ClusterIP
+    port: 26379
+    name: "my-redis-sentinel"
+
+startupProbe:
+  enabled: true
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 60  # Increased for more tolerance
+  successThreshold: 1
+
+metrics:
+  enabled: false
+
+tls:
+  enabled: false
+
+securityContext:
+  enabled: true
+  fsGroup: 1001
+  runAsUser: 1001
+  runAsNonRoot: true
+
+containerSecurityContext:
+  enabled: true
+  runAsUser: 1001
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+volumePermissions:
+  enabled: false

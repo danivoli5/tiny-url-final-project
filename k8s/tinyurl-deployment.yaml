@@ -20,6 +20,7 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            # MongoDB Credentials
             - name: MONGO_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -30,25 +31,32 @@ spec:
                 secretKeyRef:
                   name: mongo-credentials
                   key: password
+
+            # Redis Password (Fix: Using correct secret key name)
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: redis-credentials
-                  key: password
+                  key: redis-password  # FIXED KEY NAME
+
+            # Redis Sentinel Master
+            - name: REDIS_SENTINEL_MASTER
+              value: "mymaster"  # Matches Sentinel monitor name
+
+            # Redis Sentinel Nodes (Updated with the correct DNS format)
+            - name: REDIS_SENTINEL_NODES
+              value: "my-redis.default.svc.cluster.local:26379"
+
+            # Optional: Fallback Redis Direct Connection (if Sentinel fails)
             - name: REDIS_HOST
-              value: "redis-0.redis"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: tinyurl-service
-  labels:
-    app: tinyurl-app
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 8080
-      targetPort: 8080
-      protocol: TCP
-  selector:
-    app: tinyurl-app
+              value: "my-redis.default.svc.cluster.local"  # Direct Redis host
+            - name: REDIS_PORT
+              value: "6379"
+            - name: SPRING_REDIS_LETTUCE_FORCE_LEGACY_MODE
+              value: "true"
+            - name: SPRING_REDIS_SENTINEL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: redis-password
+
