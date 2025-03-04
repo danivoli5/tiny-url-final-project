@@ -10,8 +10,13 @@ services:
     networks:
       - tinyurl-net
     environment:
-      MONGO_USERNAME: mongouser
-      MONGO_PASSWORD: mongopass
+      environment:
+      SPRING_DATA_MONGODB_URI: "mongodb://mongouser:mongopass@mongo:27017/tinydb?authSource=admin"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_SENTINEL_MASTER: "dummy-master"
+      REDIS_SENTINEL_NODES: "redis:26379"
+      SPRING_REDIS_SENTINEL_PASSWORD: "dummy-password"
 
   mongo:
     image: mongo:4.0
@@ -24,7 +29,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongouser
       MONGO_INITDB_ROOT_PASSWORD: mongopass
-
 
   redis:
     image: redis:alpine

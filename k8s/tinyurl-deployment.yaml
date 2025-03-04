@@ -32,28 +32,31 @@ spec:
                   name: mongo-credentials
                   key: password
 
-            # Redis Password (Fix: Using correct secret key name)
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: redis-credentials
-                  key: redis-password  # FIXED KEY NAME
-
-            # Redis Sentinel Master
             - name: REDIS_SENTINEL_MASTER
-              value: "mymaster"  # Matches Sentinel monitor name
-
-            # Redis Sentinel Nodes (Updated with the correct DNS format)
+              valueFrom:
+                configMapKeyRef:
+                  name: tinyurl-config
+                  key: REDIS_SENTINEL_MASTER
             - name: REDIS_SENTINEL_NODES
-              value: "my-redis.default.svc.cluster.local:26379"
-
-            # Optional: Fallback Redis Direct Connection (if Sentinel fails)
+              valueFrom:
+                configMapKeyRef:
+                  name: tinyurl-config
+                  key: REDIS_SENTINEL_NODES
             - name: REDIS_HOST
-              value: "my-redis.default.svc.cluster.local"  # Direct Redis host
+              valueFrom:
+                configMapKeyRef:
+                  name: tinyurl-config
+                  key: REDIS_HOST
             - name: REDIS_PORT
-              value: "6379"
+              valueFrom:
+                configMapKeyRef:
+                  name: tinyurl-config
+                  key: REDIS_PORT
             - name: SPRING_REDIS_LETTUCE_FORCE_LEGACY_MODE
-              value: "true"
+              valueFrom:
+                configMapKeyRef:
+                  name: tinyurl-config
+                  key: SPRING_REDIS_LETTUCE_FORCE_LEGACY_MODE
             - name: SPRING_REDIS_SENTINEL_PASSWORD
               valueFrom:
                 secretKeyRef:
