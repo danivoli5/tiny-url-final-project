@@ -60,3 +60,18 @@ spec:
                   name: redis-credentials
                   key: redis-password
 
+---
+# Service to expose the TinyURL app
+apiVersion: v1
+kind: Service
+metadata:
+  name: tinyurl-service
+  labels:
+    app: tinyurl-app
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: tinyurl-app
