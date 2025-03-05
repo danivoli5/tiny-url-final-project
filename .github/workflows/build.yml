@@ -32,12 +32,19 @@ jobs:
           chmod +x ./build/git_update.sh
           bash ./build/git_update.sh -v patch
 
+      - name: Build Docker Image
+        env:
+          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          docker build -t tinyurl-app:latest -t tinyurl-app:${IMAGE_TAG} .
+          docker images
+
       - name: Start Docker Compose Services
         env:
           IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
         run: |
-          echo "Building and starting services with tag: $IMAGE_TAG"
-          docker compose up -d --build
+          echo "Starting services with tag: $IMAGE_TAG"
+          docker compose up -d
 
       - name: Wait for services to be ready
         run: |
@@ -68,8 +75,9 @@ jobs:
         env:
           IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
         run: |
+          echo "Tagging and pushing image with tag: $IMAGE_TAG"
           IMAGE_NAME="gcr.io/${{ secrets.GCP_PROJECT_ID }}/tinyurl-app:${IMAGE_TAG}"
-          docker tag tinyurl-app:latest $IMAGE_NAME
+          docker tag tinyurl-app:${IMAGE_TAG} $IMAGE_NAME
           docker push $IMAGE_NAME
           echo "Pushed image: $IMAGE_NAME"
 

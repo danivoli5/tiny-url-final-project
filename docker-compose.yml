@@ -1,7 +1,8 @@
 version: "3.8"
 services:
   tinyurl-app:
-    build: .
+#    build: .
+    image: tinyurl-app:${IMAGE_TAG:-latest}
     ports:
       - "8080:8080"
     depends_on:
