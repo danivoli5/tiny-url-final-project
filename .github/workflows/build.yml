@@ -53,26 +53,26 @@ jobs:
           fi
           echo "E2E test passed successfully"
 
-#      - name: Authenticate to Google Cloud
-#        uses: 'google-github-actions/auth@v1'
-#        with:
-#          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-#
-#      - name: Set up Cloud SDK
-#        uses: 'google-github-actions/setup-gcloud@v1'
-#
-#      - name: Configure Docker for GCR
-#        run: gcloud auth configure-docker
-#
-#      - name: Tag and Push to GCR
-#        env:
-#          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
-#        run: |
-#          IMAGE_NAME="gcr.io/${{ secrets.GCP_PROJECT_ID }}/tinyurl-app:${IMAGE_TAG}"
-#          docker tag tinyurl-app:latest $IMAGE_NAME
-#          docker push $IMAGE_NAME
-#          echo "Pushed image: $IMAGE_NAME"
-#
-#      - name: Cleanup
-#        if: always()
-#        run: docker compose down -v
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v1'
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+
+      - name: Tag and Push to GCR
+        env:
+          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          IMAGE_NAME="gcr.io/${{ secrets.GCP_PROJECT_ID }}/tinyurl-app:${IMAGE_TAG}"
+          docker tag tinyurl-app:latest $IMAGE_NAME
+          docker push $IMAGE_NAME
+          echo "Pushed image: $IMAGE_NAME"
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
