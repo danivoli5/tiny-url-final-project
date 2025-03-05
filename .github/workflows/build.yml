@@ -111,9 +111,7 @@ jobs:
           kubectl set image deployment/tinyurl-app \
             tinyurl-app=gcr.io/${{ secrets.GCP_PROJECT_ID }}/tinyurl:${IMAGE_TAG}
           
-          # Wait for rollout to complete
-          kubectl rollout status deployment/tinyurl-app && echo "Deployment updated successfully"
-
+          kubectl rollout restart deployment/tinyurl-app
       - name: Verify Deployment
         run: |
           # Get deployment status
