@@ -5,18 +5,26 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - mongo
-      - redis
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
     networks:
       - tinyurl-net
+      - nginx-net
     environment:
-      environment:
       SPRING_DATA_MONGODB_URI: "mongodb://mongouser:mongopass@mongo:27017/tinydb?authSource=admin"
       REDIS_HOST: redis
       REDIS_PORT: "6379"
       REDIS_SENTINEL_MASTER: "dummy-master"
       REDIS_SENTINEL_NODES: "redis:26379"
       SPRING_REDIS_SENTINEL_PASSWORD: "dummy-password"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/swagger-ui.html || exit 1"]
+      interval: 10s
+      timeout: 60s
+      retries: 20
 
   mongo:
     image: mongo:4.0
@@ -29,6 +37,11 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongouser
       MONGO_INITDB_ROOT_PASSWORD: mongopass
+    healthcheck:
+      test: ["CMD-SHELL", "mongo --eval \"db.adminCommand('ping')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
@@ -40,9 +53,26 @@ services:
       REDIS_PASSWORD: redis
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  nginx:
+    depends_on:
+      - tinyurl-app
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - nginx-net
 networks:
   tinyurl-net:
+    driver: bridge
+  nginx-net:
     driver: bridge
 
 volumes:
