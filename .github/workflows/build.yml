@@ -10,10 +10,8 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     outputs:
       image_tag: ${{ steps.increment-git-tag.outputs.git-tag }}
-
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -84,3 +82,42 @@ jobs:
       - name: Cleanup
         if: always()
         run: docker compose down -v
+
+  deploy-to-gke:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v1'
+
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v1
+        with:
+          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
+          location: ${{ secrets.GKE_CLUSTER_ZONE }}
+
+      - name: Update Deployment Image
+        env:
+          IMAGE_TAG: ${{ needs.build-and-deploy.outputs.image_tag }}
+        run: |
+          # Update the deployment image
+          kubectl set image deployment/tinyurl-app \
+            tinyurl-app=gcr.io/${{ secrets.GCP_PROJECT_ID }}/tinyurl:${IMAGE_TAG}
+          
+          # Wait for rollout to complete
+          kubectl rollout status deployment/tinyurl-app --timeout=300s
+
+      - name: Verify Deployment
+        run: |
+          # Get deployment status
+          kubectl get deployment tinyurl-app -o wide
+          
+          # Get pods status
+          kubectl get pods -l app=tinyurl-app
