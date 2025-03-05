@@ -20,25 +20,3 @@ rs.initiate({
 Confirm with:
 rs.status();
 ```
-
-# Redis Replica Set Configuration
-
-```
-Exec into the replica pod (e.g., redis-1):
-kubectl exec -it redis-1 -- redis-cli
-
-Then, in the Redis CLI, run:
-REPLICAOF redis-0.redis 6379
-
-Verify Replication:
-On redis-1, run:
-INFO replication
-
-You should see:
-role:slave (or replica)
-master_host: redis-0.redis
-master_link_status: up
-
-Optionally, check redis-0 with:
-kubectl exec -it redis-0 -- redis-cli INFO replication
-```
