@@ -6,5 +6,7 @@ docker tag tinyurl:latest gcr.io/useful-art-450916-u3/tinyurl:latest
 
 gcloud auth configure-docker
 
-docker push gcr.io/useful-art-450916-u3/tinyurl:latest
+docker push gcr.io/useful-art-450916-u3/tinyurl:latest 
+
+
 ```
