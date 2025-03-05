@@ -76,7 +76,7 @@ jobs:
           IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
         run: |
           echo "Tagging and pushing image with tag: $IMAGE_TAG"
-          IMAGE_NAME="gcr.io/${{ secrets.GCP_PROJECT_ID }}/tinyurl-app:${IMAGE_TAG}"
+          IMAGE_NAME="gcr.io/${{ secrets.GCP_PROJECT_ID }}/tinyurl:${IMAGE_TAG}"
           docker tag tinyurl-app:${IMAGE_TAG} $IMAGE_NAME
           docker push $IMAGE_NAME
           echo "Pushed image: $IMAGE_NAME"
