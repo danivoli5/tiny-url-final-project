@@ -3,16 +3,76 @@ name: Java CI with Maven
 on:
   push:
     branches: [ "main" ]
+
+permissions:
+  contents: write
+
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
+    outputs:
+      image_tag: ${{ steps.increment-git-tag.outputs.git-tag }}
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build And Run Unit Tests
-      run: mvn -B package --file pom.xml
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build And Run Unit Tests
+        run: mvn -B package --file pom.xml
+
+      - name: Automatic Tagging of Releases
+        id: increment-git-tag
+        run: |
+          chmod +x ./build/git_update.sh
+          bash ./build/git_update.sh -v patch
+
+      - name: Start Docker Compose Services
+        env:
+          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          echo "Building and starting services with tag: $IMAGE_TAG"
+          docker compose up -d --build
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to be ready..."
+          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost/swagger-ui.html)" != "200" ]]; do sleep 5; done' || false
+
+      - name: Run E2E Test
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/swagger-ui.html)
+          if [ "$response" != "200" ]; then
+            echo "E2E test failed with status code: $response"
+            exit 1
+          fi
+          echo "E2E test passed successfully"
+
+#      - name: Authenticate to Google Cloud
+#        uses: 'google-github-actions/auth@v1'
+#        with:
+#          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+#
+#      - name: Set up Cloud SDK
+#        uses: 'google-github-actions/setup-gcloud@v1'
+#
+#      - name: Configure Docker for GCR
+#        run: gcloud auth configure-docker
+#
+#      - name: Tag and Push to GCR
+#        env:
+#          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+#        run: |
+#          IMAGE_NAME="gcr.io/${{ secrets.GCP_PROJECT_ID }}/tinyurl-app:${IMAGE_TAG}"
+#          docker tag tinyurl-app:latest $IMAGE_NAME
+#          docker push $IMAGE_NAME
+#          echo "Pushed image: $IMAGE_NAME"
+#
+#      - name: Cleanup
+#        if: always()
+#        run: docker compose down -v
