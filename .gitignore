@@ -19,3 +19,6 @@ target/classes/com/handson/tinyurl/service/Redis.class
 target/classes/com/handson/tinyurl/repository/UserRepository.class
 target/classes/com/handson/tinyurl/model/User.class
 target/classes/com/handson/tinyurl/model/ShortUrl.class
+target/surefire-reports/com.handson.tinyurl.ShortUrlTest.txt
+target/surefire-reports/TEST-com.handson.tinyurl.ShortUrlTest.xml
+target/test-classes/com/handson/tinyurl/ShortUrlTest.class

@@ -14,5 +14,5 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml -DskipTests    # Add -DskipTests here
+    - name: Build And Run Unit Tests
+      run: mvn -B package --file pom.xml
