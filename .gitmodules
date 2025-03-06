@@ -1,0 +1,3 @@
+[submodule "tiny-url-terraform"]
+	path = tiny-url-terraform
+	url = https://github.com/danivoli5/tiny-url-terraform.git
