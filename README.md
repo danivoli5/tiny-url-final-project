@@ -1,12 +1,1 @@
-# Build the img and push to gcr
-```
-docker build -t tinyurl:latest .
-
-docker tag tinyurl:latest gcr.io/useful-art-450916-u3/tinyurl:latest
-
-gcloud auth configure-docker
-
-docker push gcr.io/useful-art-450916-u3/tinyurl:latest 
-
-
-```
+[![Java CI with Maven](https://github.com/danivoli5/tiny-url-final-project/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/danivoli5/tiny-url-final-project/actions/workflows/build.yml)
